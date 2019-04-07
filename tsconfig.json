@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "rootDir": "src", // Ensures the output directory folder structure is the same as the src folder structure.
+      "outDir": "dist",
+      "target": "es2017",
+      "sourceMap": true
+    },
+    "include": [
+      "src/**/*" // The '**' recursively matches any subdirectory.
+    ]
+  }
