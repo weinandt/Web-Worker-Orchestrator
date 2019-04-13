@@ -1,4 +1,5 @@
-import { Job } from "../shared/job.js";
-let myJob = new Job();
-myJob.test();
+import { Orchestrator } from "../orchestrator/orchestrator.js";
+//let myJob = new Job();
+//myJob.test();
+Orchestrator.ScheduleJob(null);
 //# sourceMappingURL=demo.js.map
