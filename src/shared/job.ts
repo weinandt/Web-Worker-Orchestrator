@@ -1,15 +1,12 @@
 type OnJobCompleteCallback = (result: any) => void;
 
 class Job {
-    private jobId;
+    private jobId:number;
     private functionArguments: any[];
     private functionName: string;
     private onCompleteCallBack: OnJobCompleteCallback;
 
-    constructor(functionName: string, functionArguments:any[], onCompleteCallBack: OnJobCompleteCallback = null) {
-        // TODO: figure out if this should be randomly generated or user supplied.
-        this.jobId = Math.random();
-
+    constructor(functionName: string, functionArguments:any[], onCompleteCallBack: OnJobCompleteCallback) {
         this.functionName = functionName;
         this.functionArguments = functionArguments;
         this.onCompleteCallBack = onCompleteCallBack;
@@ -21,6 +18,18 @@ class Job {
 
     get FunctionName(): string {
         return this.functionName;
+    }
+
+    set JobId(jobId: number) {
+        this.jobId = jobId;
+    }
+
+    get JobId(): number {
+        return this.jobId;
+    }
+
+    get OnCompleteCallBack(): OnJobCompleteCallback {
+        return this.onCompleteCallBack;
     }
 }
 

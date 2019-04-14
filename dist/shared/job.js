@@ -1,7 +1,5 @@
 class Job {
-    constructor(functionName, functionArguments, onCompleteCallBack = null) {
-        // TODO: figure out if this should be randomly generated or user supplied.
-        this.jobId = Math.random();
+    constructor(functionName, functionArguments, onCompleteCallBack) {
         this.functionName = functionName;
         this.functionArguments = functionArguments;
         this.onCompleteCallBack = onCompleteCallBack;
@@ -11,6 +9,15 @@ class Job {
     }
     get FunctionName() {
         return this.functionName;
+    }
+    set JobId(jobId) {
+        this.jobId = jobId;
+    }
+    get JobId() {
+        return this.jobId;
+    }
+    get OnCompleteCallBack() {
+        return this.onCompleteCallBack;
     }
 }
 export { Job };

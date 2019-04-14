@@ -5,13 +5,31 @@ class Orchestrator {
      */
     constructor() { }
     static ScheduleJob(job) {
+        // Deciding if the job should be queued becuase the workers are busy.
+        if (Orchestrator.NumberOfActiveWorkers == Constants.MaxNumberOfWorkers) {
+            Orchestrator.JobQueue.push(job);
+            return;
+        }
+        // Creating a new worker and running the job on the worker.
         const worker = Orchestrator.CreateWebWorker();
-        worker.postMessage(Orchestrator.ConvertJobToMessageForWorker(job));
+        Orchestrator.SetUpAndSendJobToWorker(worker, job);
     }
+    static SetUpAndSendJobToWorker(worker, job) {
+        job.JobId = Orchestrator.JobIdGenerator.next().value;
+        worker.postMessage(Orchestrator.ConvertJobToMessageForWorker(job));
+        Orchestrator.CurrentlyExecutingJobMap.set(job.JobId, job);
+    }
+    /**
+     * Converts a job object to an object the worker can understand. This is necessary for two reasons:
+     * 1. Removes the callback function for the job which wouldn't serialize for postMessage.
+     * 2. Workers don't currently support module imports, so the worker can't import the Job class.
+     * @param job Job which will be serialized into a format the worker can understand.
+     */
     static ConvertJobToMessageForWorker(job) {
         let messageForWorker = {};
         messageForWorker["functionName"] = job.FunctionName;
         messageForWorker["functionArguments"] = job.FunctionArguments;
+        messageForWorker["jobId"] = job.JobId;
         return messageForWorker;
     }
     static CreateWebWorker() {
@@ -22,13 +40,34 @@ class Orchestrator {
         return worker;
     }
     static OnWorkerMessage(event) {
-        // TODO: tests that the this is atually a reference to the worker.
-        this.terminate();
-        console.log("worker responded with a message.");
+        // Deciding if there is more work for the worker to take on.
+        if (Orchestrator.JobQueue.length > 0) {
+            const nextJob = Orchestrator.JobQueue.pop();
+            Orchestrator.SetUpAndSendJobToWorker(this, nextJob);
+        }
+        else {
+            // Killing the worker becuase there is no more work to do.
+            this.terminate();
+        }
+        // Reading the job information and removing the job from the currently executing map.
+        const result = event.data["result"];
+        const jobId = event.data["jobId"];
+        const executedJob = Orchestrator.CurrentlyExecutingJobMap.get(jobId);
+        Orchestrator.CurrentlyExecutingJobMap.delete(jobId);
+        executedJob.OnCompleteCallBack(result);
     }
     static OnWorkerError(event) {
         console.log("there was an error in the worker.");
     }
 }
+Orchestrator.JobQueue = [];
+Orchestrator.NumberOfActiveWorkers = 0;
+Orchestrator.CurrentlyExecutingJobMap = new Map();
+Orchestrator.JobIdGenerator = function* () {
+    let index = 0;
+    while (true) {
+        yield index++;
+    }
+}();
 export { Orchestrator };
 //# sourceMappingURL=orchestrator.js.map

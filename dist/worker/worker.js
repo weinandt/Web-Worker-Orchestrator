@@ -13,7 +13,12 @@ function OnMessageFromOrchestrator(event) {
     // Invoking the function with the passed arguments.
     const functionArguments = event.data.functionArguments;
     const returnValue = functionReference.apply(null, functionArguments);
-    postMessage(returnValue);
+    const jobId = event.data.jobId;
+    const messageForOrchestrator = {
+        jobId: jobId,
+        result: returnValue
+    };
+    postMessage(messageForOrchestrator);
 }
 // Listening to messages from the orchestrator.
 onmessage = OnMessageFromOrchestrator;
