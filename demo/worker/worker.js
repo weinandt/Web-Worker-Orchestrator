@@ -2,7 +2,7 @@
  * Workers cannot currently use modules, so keeping the logic simple.
  * Chromium bug traking using modules in web workers: https://bugs.chromium.org/p/chromium/issues/detail?id=680046
  */
-importScripts("../demo/testFuntions.js");
+importScripts("../demoOnlyScripts/testFuntions.js");
 function OnMessageFromOrchestrator(event) {
     // Finding the funciton in the global namespace. The function must be in one of the importScripts javascript files.
     const functionName = event.data.functionName;

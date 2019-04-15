@@ -55,6 +55,7 @@ class Orchestrator {
         let worker = new Worker(Constants.PathToWorkerFileForBrowser);
         worker.onerror = Orchestrator.OnWorkerError;
         worker.onmessage = Orchestrator.OnWorkerMessage;
+        Orchestrator.NumberOfActiveWorkers++;
 
         return worker;
     }
@@ -62,7 +63,7 @@ class Orchestrator {
     private static OnWorkerMessage(this: Worker, event: MessageEvent): any {
         // Deciding if there is more work for the worker to take on.
         if(Orchestrator.JobQueue.length > 0) {
-            const nextJob = Orchestrator.JobQueue.pop();
+            const nextJob = Orchestrator.JobQueue.shift();
             Orchestrator.SetUpAndSendJobToWorker(this, nextJob);
         } else {
             // Killing the worker becuase there is no more work to do.
@@ -75,12 +76,11 @@ class Orchestrator {
         const executedJob: Job = Orchestrator.CurrentlyExecutingJobMap.get(jobId);
         Orchestrator.CurrentlyExecutingJobMap.delete(jobId);
 
-
         executedJob.OnCompleteCallBack(result);
     }
 
     private static OnWorkerError(event: ErrorEvent): any {
-        console.log("there was an error in the worker.");
+        throw "there was an error in the worker. " + event.message;
     }
 }
 

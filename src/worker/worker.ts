@@ -3,7 +3,7 @@
  * Chromium bug traking using modules in web workers: https://bugs.chromium.org/p/chromium/issues/detail?id=680046
  */
 
- importScripts("../demo/testFuntions.js");
+ importScripts("../demoOnlyScripts/testFuntions.js");
 
 
 function OnMessageFromOrchestrator(event: MessageEvent) : any {

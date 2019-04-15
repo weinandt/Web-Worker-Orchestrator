@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
       "rootDir": "src", // Ensures the output directory folder structure is the same as the src folder structure.
-      "outDir": "dist",
+      "outDir": "demo",
       "target": "es2017",
       "sourceMap": true,
       "lib": [
