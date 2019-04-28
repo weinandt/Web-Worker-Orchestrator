@@ -13,3 +13,5 @@ Allows CPU intensive Javascript to be scheduled off the main thread.
 1. Add unit tests.
 2. Determine if it is possible for a web worker to fail execution and if a recovery mechanism is necessary.
 3. Once modules are supported for web workers in Chrome, change the worker to use modules. See this chromium bug for tracking support: https://bugs.chromium.org/p/chromium/issues/detail?id=680046
+4. Add documentation on how to use.
+5. Add documentation on building.
