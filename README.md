@@ -28,3 +28,4 @@ Tests reside in the test directory and use the Jasmine testing framework: https:
 4. Add documentation on how to use.
 5. Add documentation on building.
 6. Add dist folder. Reference scripts from dist folder instead of demo. That way demo and tests can be separate.
+7. Look into job scheduluing with async await instead of callbacks.

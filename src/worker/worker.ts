@@ -6,7 +6,7 @@
  * The worker receives a message from the orchestrator containing a mapping to the function the worker should invoke.
  * The worker will run this function and send a message back to the orchestrator with the result.
  */
- importScripts("../demoOnlyScripts/testFuntions.js");
+ importScripts("../shared/testFunctions.js");
 
 
 function OnMessageFromOrchestrator(event: MessageEvent) : any {
