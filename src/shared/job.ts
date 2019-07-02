@@ -1,15 +1,20 @@
-type OnJobCompleteCallback = (result: any) => void;
+import {JobResult} from "./jobResult.js";
 
-class Job {
+class Job<T> {
     private jobId:number;
     private functionArguments: any[];
     private functionName: string;
-    private onCompleteCallBack: OnJobCompleteCallback;
+    private jobPromise: Promise<JobResult<T>>;
+    private successResolver: (value?: JobResult<T> | PromiseLike<JobResult<T>>) => void;
+    private errorRejector: (reason?: any) => void;
 
-    constructor(functionName: string, functionArguments:any[], onCompleteCallBack: OnJobCompleteCallback) {
+    constructor(functionName: string, functionArguments:any[]) {
         this.functionName = functionName;
         this.functionArguments = functionArguments;
-        this.onCompleteCallBack = onCompleteCallBack;
+        this.jobPromise = new Promise((resolve, reject) => {
+            this.successResolver = resolve;
+            this.errorRejector = reject;
+        });
     }
 
     get FunctionArguments(): any[] {
@@ -28,9 +33,17 @@ class Job {
         return this.jobId;
     }
 
-    get OnCompleteCallBack(): OnJobCompleteCallback {
-        return this.onCompleteCallBack;
+    get JobPromise(): Promise<JobResult<T>> {
+        return this.jobPromise;
+    }
+
+    public CompleteJob(jobResult: JobResult<T>) {
+        if(jobResult.WasSuccesful) {
+            this.successResolver(jobResult);
+        } else {
+            this.errorRejector(jobResult);
+        }
     }
 }
 
-export {Job, OnJobCompleteCallback};
+export {Job};

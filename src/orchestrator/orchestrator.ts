@@ -1,10 +1,11 @@
 import { Job } from "../shared/job.js";
+import {JobResult} from "../shared/jobResult.js";
 import { Constants } from "../shared/constants.js"
 
 class Orchestrator {
-    private static JobQueue: Job[] = [];
+    private static JobQueue: Job<any>[] = [];
     private static NumberOfActiveWorkers = 0;
-    private static CurrentlyExecutingJobMap: Map<number,Job> = new Map();
+    private static CurrentlyExecutingJobMap: Map<number,Job<any>> = new Map();
     private static JobIdGenerator = function* () {
         let index = 0;
         while (true) {
@@ -17,19 +18,26 @@ class Orchestrator {
      */
     private constructor() { }
 
-    public static ScheduleJob(job: Job): void {
-        // Deciding if the job should be queued becuase the workers are busy.
+    public static async ScheduleJob<ReturnType>(functionName: string, functionArguments: any[]): Promise<JobResult<ReturnType>> {
+        // TODO null check.
+
+        // Creating a Job for the worker.
+        const job: Job<ReturnType> = new Job<ReturnType>(functionName, functionArguments);
+
+        // Deciding if the job should be queued  becuase the workers are busy.
         if (Orchestrator.NumberOfActiveWorkers == Constants.MaxNumberOfWorkers) {
             Orchestrator.JobQueue.push(job);
-            return;
+            return job.JobPromise;
         }
 
         // Creating a new worker and running the job on the worker.
         const worker: Worker = Orchestrator.CreateWebWorker();
         Orchestrator.SetUpAndSendJobToWorker(worker, job);
+        
+        return job.JobPromise;
     }
 
-    private static SetUpAndSendJobToWorker(worker:Worker, job:Job) {
+    private static SetUpAndSendJobToWorker(worker:Worker, job:Job<any>) {
         job.JobId = Orchestrator.JobIdGenerator.next().value;
         worker.postMessage(Orchestrator.ConvertJobToMessageForWorker(job));
         Orchestrator.CurrentlyExecutingJobMap.set(job.JobId, job);
@@ -41,7 +49,7 @@ class Orchestrator {
      * 2. Workers don't currently support module imports, so the worker can't import the Job class.
      * @param job Job which will be serialized into a format the worker can understand.
      */
-    private static ConvertJobToMessageForWorker(job: Job): any {
+    private static ConvertJobToMessageForWorker(job: Job<any>): any {
         let messageForWorker = {};
         messageForWorker["functionName"] = job.FunctionName;
         messageForWorker["functionArguments"] = job.FunctionArguments;
@@ -73,10 +81,13 @@ class Orchestrator {
         // Reading the job information and removing the job from the currently executing map.
         const result:any = event.data["result"];
         const jobId:number = event.data["jobId"];
-        const executedJob: Job = Orchestrator.CurrentlyExecutingJobMap.get(jobId);
+        const executedJob: Job<any> = Orchestrator.CurrentlyExecutingJobMap.get(jobId);
         Orchestrator.CurrentlyExecutingJobMap.delete(jobId);
 
-        executedJob.OnCompleteCallBack(result);
+        // TODO: handle errors.
+        // TODO: figure out what to do so you don't have to use the "any" type here.
+        const jobResult: JobResult<any> = new JobResult(true, result);
+        executedJob.CompleteJob(jobResult);
     }
 
     private static OnWorkerError(event: ErrorEvent): any {
